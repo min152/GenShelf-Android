@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="title" format="string"/>
+    <attr name="leftIcon" format="reference"/>
+    <attr name="rightIcon" format="reference"/>
+    <declare-styleable name="NavigationBar">
+        <attr name="title"/>
+        <attr name="leftIcon"/>
+        <attr name="rightIcon"/>
+    </declare-styleable>
+</resources>
