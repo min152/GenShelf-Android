@@ -27,7 +27,7 @@ import com.fichardu.interpolator.*;
 /**
  * Created by Gen on 2016/3/29.
  */
-public class NavigationBar extends AppBarLayout implements View.OnClickListener {
+public class NavigationBar extends RelativeLayout implements View.OnClickListener {
     public interface OnClickListener {
         void onClick(View v, int index);
     }
@@ -35,7 +35,8 @@ public class NavigationBar extends AppBarLayout implements View.OnClickListener 
     public enum AnimationType {
         NONE,
         PUSH,
-        POP
+        POP,
+        FADE
     }
 
     ImageButton mLeftItemButton;
@@ -124,6 +125,50 @@ public class NavigationBar extends AppBarLayout implements View.OnClickListener 
             case NONE:
                 setLeftIcon(leftIcon);
                 break;
+            case FADE:
+            {
+                Context context = getContext();
+                final ImageButton newButton = initRightButton(context);
+                newButton.setImageDrawable(leftIcon);
+                newButton.setOnClickListener(this);
+                addView(newButton);
+
+                AlphaAnimation aa = new AlphaAnimation(0, 1);
+                aa.setInterpolator(new EaseInOutCubicInterpolator());
+                aa.setDuration(Configs.AnimationDuring);
+                aa.setFillAfter(true);
+                newButton.startAnimation(aa);
+
+                if (mLeftItemButton != null) mLeftItemButton.clearAnimation();
+                aa = new AlphaAnimation(1, 0);
+                aa.setInterpolator(new EaseInOutCubicInterpolator());
+                aa.setDuration(Configs.AnimationDuring);
+                aa.setFillAfter(true);
+                mLeftItemButton.startAnimation(aa);
+                final View willRemove = mLeftItemButton;
+                aa.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        NavigationBar.this.getHandler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                removeView(willRemove);
+                            }
+                        }, 0);
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+
+                    }
+                });
+                mLeftItemButton = newButton;
+            }
             default:
                 Context context = getContext();
                 final ImageButton newButton = initLeftButton(context);
@@ -184,6 +229,50 @@ public class NavigationBar extends AppBarLayout implements View.OnClickListener 
             case NONE:
                 setRightIcon(rightIcon);
                 break;
+            case FADE:
+            {
+                Context context = getContext();
+                final ImageButton newButton = initRightButton(context);
+                newButton.setImageDrawable(rightIcon);
+                newButton.setOnClickListener(this);
+                addView(newButton);
+
+                AlphaAnimation aa = new AlphaAnimation(0, 1);
+                aa.setInterpolator(new EaseInOutCubicInterpolator());
+                aa.setDuration(Configs.AnimationDuring);
+                aa.setFillAfter(true);
+                newButton.startAnimation(aa);
+
+                if (mRightItemButton != null) mRightItemButton.clearAnimation();
+                aa = new AlphaAnimation(1, 0);
+                aa.setInterpolator(new EaseInOutCubicInterpolator());
+                aa.setDuration(Configs.AnimationDuring);
+                aa.setFillAfter(true);
+                mRightItemButton.startAnimation(aa);
+                final View willRemove = mRightItemButton;
+                aa.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        NavigationBar.this.getHandler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                removeView(willRemove);
+                            }
+                        }, 0);
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+
+                    }
+                });
+                mRightItemButton = newButton;
+            }
             default:
                 Context context = getContext();
                 final ImageButton newButton = initRightButton(context);
@@ -247,6 +336,48 @@ public class NavigationBar extends AppBarLayout implements View.OnClickListener 
                 RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams)mTitleView.getLayoutParams();
                 layoutParams.setMargins(H.dip2px(context, mTitleLeft), 0, H.dip2px(context, mTitleRight), 0);
                 break;
+            case FADE:
+            {
+                final TextView newTitleView = initTitle(context);
+                newTitleView.setText(title);
+                addView(newTitleView);
+
+                AlphaAnimation aa = new AlphaAnimation(0, 1);
+                aa.setInterpolator(new EaseInOutCubicInterpolator());
+                aa.setDuration(Configs.AnimationDuring);
+                aa.setFillAfter(true);
+                newTitleView.startAnimation(aa);
+
+                if (mTitleView != null) mTitleView.clearAnimation();
+                aa = new AlphaAnimation(1, 0);
+                aa.setInterpolator(new EaseInOutCubicInterpolator());
+                aa.setDuration(Configs.AnimationDuring);
+                aa.setFillAfter(true);
+                mTitleView.startAnimation(aa);
+                final View willRemove = mTitleView;
+                aa.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        NavigationBar.this.getHandler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                removeView(willRemove);
+                            }
+                        }, 0);
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+
+                    }
+                });
+                mTitleView = newTitleView;
+            }
             default: {
                 final TextView newTitleView = initTitle(context);
                 newTitleView.setText(title);

@@ -12,10 +12,10 @@ import apps.gen.lib.controllers.TabController;
  * Helper of Gen libraries.
  */
 public final class H {
-    public static NavigationController navController(Controller thiz) {
+    public static NavigationController navC(Controller thiz) {
         return NavigationController.getNavigationController(thiz);
     }
-    public static TabController tabController(Controller thiz) {
+    public static TabController tabC(Controller thiz) {
         return TabController.getTabController(thiz);
     }
     public static int dip2px(Context context, float dipValue){
@@ -44,4 +44,9 @@ public final class H {
     public interface BaseInterface2<T, E> {
         void run(T p, E e);
     }
+
+    public static NotificationCenter NC() {
+        return NotificationCenter.instance();
+    }
+
 }

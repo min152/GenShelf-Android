@@ -18,6 +18,7 @@ import java.util.Collections;
 
 import apps.gen.lib.utils.Configs;
 import apps.gen.lib.utils.H;
+import apps.gen.lib.views.NavigationBar;
 import apps.gen.lib.views.TabBar;
 import apps.gen.lib.R;
 
@@ -105,6 +106,10 @@ public class TabController extends Controller {
             mTabItem = new TabBar.TabItem(label, icon);
             mController = controller;
         }
+        public TabItem(Drawable icon, Controller controller) {
+            mTabItem = new TabBar.TabItem(controller.getTitle(), icon);
+            mController = controller;
+        }
     }
 
     TabControllerView tabView;
@@ -120,6 +125,7 @@ public class TabController extends Controller {
                     select(index, true);
             }
         });
+        updateItems();
         return tabView;
     }
 
@@ -152,13 +158,40 @@ public class TabController extends Controller {
         if (mIndex != index) {
             if (animating) return;
             setCurrentController(mItems.get(index).getController(), animated ? (mIndex < index ? AnimationType.PUSH_LEFT:AnimationType.PUSH_RIGHT) : AnimationType.NONE);
+            if (super.getTitle() == null) {
+                setSubtitle(mItems.get(index).getTabItem().getTitle(), index > mIndex ? NavigationBar.AnimationType.PUSH:NavigationBar.AnimationType.POP);
+            }
             mIndex = index;
+        }
+    }
+
+    String mSubtitle;
+    @Override
+    protected void onSubControllerChangeTitle(Controller sender, String title, NavigationBar.AnimationType type) {
+        if (sender.equals(currentController) && tabView != null) {
+            if (super.getTitle() == null) {
+                setSubtitle(title, type);
+            }
+        }
+    }
+
+    @Override
+    public String getTitle() {
+        String title = super.getTitle();
+        if (title != null) return title;
+        return mSubtitle;
+    }
+
+    void setSubtitle(String subtitle, NavigationBar.AnimationType type) {
+        mSubtitle = subtitle;
+        if (mParent != null) {
+            mParent.onSubControllerChangeTitle(this, mSubtitle, type);
         }
     }
 
     boolean animating = false;
     void updateItems() {
-        if (mItems.size() > 0) {
+        if (mItems.size() > 0 && tabView != null) {
             TabBar.TabItem[] items = new TabBar.TabItem[mItems.size()];
             int n = 0;
             for (TabItem item : mItems) {
@@ -168,6 +201,9 @@ public class TabController extends Controller {
             tabView.getTabBar().setItems(items);
             mIndex = 0;
             setCurrentController(mItems.get(mIndex).getController(), AnimationType.NONE);
+            if (super.getTitle() == null) {
+                setSubtitle(items[mIndex].getTitle(), NavigationBar.AnimationType.NONE);
+            }
         }
     }
     Controller currentController;
@@ -178,9 +214,9 @@ public class TabController extends Controller {
             case NONE:
             {
                 if (currentController != null) currentController.exitStart();
-                controller.enterStart();
+                controller.enterStart(this);
                 getFragmentManager().beginTransaction().replace(R.id.tab_content, controller).commit();
-                if (currentController != null) currentController.exitEnd();
+                if (currentController != null) currentController.exitEnd(this);
                 controller.enterEnd();
                 currentController = controller;
             }break;
@@ -198,7 +234,7 @@ public class TabController extends Controller {
 
                         @Override
                         public void onAnimationEnd(Animator animation) {
-                            willDisappear.exitEnd();
+                            willDisappear.exitEnd(TabController.this);
                             getFragmentManager().beginTransaction().remove(willDisappear).commit();
                             animating = false;
                         }
@@ -219,7 +255,7 @@ public class TabController extends Controller {
                 getFragmentManager().beginTransaction().add(R.id.tab_content, controller).commit();
                 ObjectAnimator animator = ObjectAnimator.ofFloat(controller, "moveAnimatorValue", type == AnimationType.PUSH_LEFT ? 1:-1, 0);
                 animator.setDuration(Configs.AnimationDuring);
-                controller.enterStart();
+                controller.enterStart(this);
                 final Controller willAppear = controller;
                 animator.addListener(new Animator.AnimatorListener() {
                     @Override

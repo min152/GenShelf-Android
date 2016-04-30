@@ -30,18 +30,18 @@ public class TabBar extends RelativeLayout implements View.OnClickListener {
 
     public static class TabItem {
         Drawable mIcon;
-        Drawable getIcon() {
+        public Drawable getIcon() {
             return mIcon;
         }
-        void setIcon(Drawable icon) {
+        public void setIcon(Drawable icon) {
             mIcon = icon;
         }
 
         String mTitle;
-        String getTitle() {
+        public String getTitle() {
             return mTitle;
         }
-        void setTitle(String title) {
+        public void setTitle(String title) {
             mTitle = title;
         }
 

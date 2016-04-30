@@ -20,6 +20,7 @@ import android.widget.RelativeLayout;
 import com.fichardu.interpolator.EaseInCubicInterpolator;
 import com.fichardu.interpolator.EaseOutCubicInterpolator;
 
+import java.util.Collections;
 import java.util.Stack;
 
 import apps.gen.lib.R;
@@ -123,6 +124,13 @@ public class NavigationController extends Controller {
                     item.getOnClickListener().onClick(v);
             }
         });
+        if (controllersStack.size() > 0) {
+            Controller nc = controllersStack.lastElement();
+            nc.enterStart(this);
+            getFragmentManager().beginTransaction().replace(R.id.navigation_content, nc).commit();
+            nc.enterEnd();
+            pushNavAnim(nc, NavigationBar.AnimationType.NONE);
+        }
         return navView;
     }
 
@@ -138,10 +146,9 @@ public class NavigationController extends Controller {
         if (controllersStack.size() > 0)
             base = controllersStack.lastElement();
         controllersStack.push(controller);
-        controller.setParent(this);
+        if (navView == null) return;
         if (animated) {
             if (base != null) {
-                base.onViewWillDisappear();
                 ObjectAnimator animator1 = ObjectAnimator.ofFloat(base, "pushAnimatorValue", 0, -1);
                 animator1.setInterpolator(new EaseInCubicInterpolator());
                 animator1.setDuration(Configs.AnimationDuring);
@@ -154,7 +161,7 @@ public class NavigationController extends Controller {
 
                     @Override
                     public void onAnimationEnd(Animator animation) {
-                        willDisappear.exitEnd();
+                        willDisappear.exitEnd(NavigationController.this);
                         getFragmentManager().beginTransaction().remove(willDisappear).commit();
                     }
 
@@ -175,7 +182,7 @@ public class NavigationController extends Controller {
             ObjectAnimator animator = ObjectAnimator.ofFloat(controller, "pushAnimatorValue", 1, 0);
             animator.setInterpolator(new EaseOutCubicInterpolator());
             animator.setDuration(Configs.AnimationDuring);
-            controller.enterStart();
+            controller.enterStart(this);
             final Controller willAppear = controller;
             animator.addListener(new Animator.AnimatorListener() {
                 @Override
@@ -200,15 +207,13 @@ public class NavigationController extends Controller {
             });
             animator.start();
         }else {
-            FragmentManager fragmentManager = getFragmentManager();
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             if (base != null) base.exitStart();
-            controller.enterStart();
-            fragmentTransaction.replace(R.id.navigation_content, controller).commit();
-            if (base != null) base.exitEnd();
+            controller.enterStart(this);
+            getFragmentManager().beginTransaction().replace(R.id.navigation_content, controller).commit();
+            if (base != null) base.exitEnd(this);
             controller.enterEnd();
         }
-        pushNavAnim(controller, animated);
+        pushNavAnim(controller, animated? NavigationBar.AnimationType.PUSH:NavigationBar.AnimationType.NONE);
     }
 
     public Controller pop() { return pop(false); }
@@ -222,13 +227,12 @@ public class NavigationController extends Controller {
 
         Controller top = controllersStack.pop();
         Controller last = controllersStack.lastElement();
+        if (navView == null) return top;
         if (animated) {
-            top.onViewWillDisappear();
             ObjectAnimator animator1 = ObjectAnimator.ofFloat(top, "pushAnimatorValue", 0, 1);
             animator1.setDuration(Configs.AnimationDuring);
             animator1.setInterpolator(new EaseInCubicInterpolator());
             top.exitStart();
-            top.setParent(null);
             final Controller willDisappear = top;
             animator1.addListener(new Animator.AnimatorListener() {
                 @Override
@@ -236,10 +240,8 @@ public class NavigationController extends Controller {
 
                 @Override
                 public void onAnimationEnd(Animator animation) {
-                    willDisappear.exitEnd();
-                    FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
-                    fragmentTransaction.remove(willDisappear);
-                    fragmentTransaction.commit();
+                    willDisappear.exitEnd(NavigationController.this);
+                    getFragmentManager().beginTransaction().remove(willDisappear).commit();
                 }
 
                 @Override
@@ -256,7 +258,7 @@ public class NavigationController extends Controller {
             ObjectAnimator animator = ObjectAnimator.ofFloat(last, "pushAnimatorValue", -1, 0);
             animator.setDuration(Configs.AnimationDuring);
             animator.setInterpolator(new EaseOutCubicInterpolator());
-            last.enterStart();
+            last.enterStart(this);
             final Controller willAppear = last;
             animator.addListener(new Animator.AnimatorListener() {
                 @Override
@@ -284,13 +286,112 @@ public class NavigationController extends Controller {
             });
             animator.start();
         }else {
-            FragmentManager fragmentManager = getFragmentManager();
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            Controller controller = controllersStack.lastElement();
-            fragmentTransaction.replace(R.id.navigation_content, controller).commit();
+            top.exitStart();
+            last.enterStart(this);
+            getFragmentManager().beginTransaction().replace(R.id.navigation_content, last).commit();
+            top.exitEnd(this);
+            last.enterEnd();
         }
-        popNavAnim(last, animated);
+        popNavAnim(last, animated? NavigationBar.AnimationType.POP: NavigationBar.AnimationType.NONE);
         return top;
+    }
+
+    public void setControllers(Controller[] controllers) {setControllers(controllers, false);}
+    public void setControllers(Controller[] controllers, boolean animated) {
+        for (Controller c : controllersStack) {
+            c.setParent(null);
+        }
+        for (Controller c : controllers) {
+            c.setParent(this);
+        }
+        Controller oc = null;
+        if (controllersStack.size() > 0) {
+            oc = controllersStack.lastElement();
+        }
+        controllersStack.clear();
+        Collections.addAll(controllersStack, controllers);
+        Controller nc = controllers[controllers.length - 1];
+        if (animated) {
+            if (oc != null) {
+                ObjectAnimator animator = ObjectAnimator.ofFloat(oc, "changeAnimatorValue", 0, -1);
+                animator.setDuration(Configs.AnimationDuring);
+                animator.setInterpolator(new EaseOutCubicInterpolator());
+                oc.exitStart();
+                final Controller willDisappear = oc;
+                animator.addListener(new Animator.AnimatorListener() {
+                    @Override
+                    public void onAnimationStart(Animator animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        willDisappear.exitEnd(NavigationController.this);
+                        getFragmentManager().beginTransaction().remove(willDisappear).commit();
+                    }
+
+                    @Override
+                    public void onAnimationCancel(Animator animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animator animation) {
+
+                    }
+                });
+                animator.start();
+            }
+
+            getFragmentManager().beginTransaction().add(R.id.navigation_content, nc).commit();
+            ObjectAnimator animator = ObjectAnimator.ofFloat(nc, "changeAnimatorValue", 1, 0);
+            animator.setDuration(Configs.AnimationDuring);
+            animator.setInterpolator(new EaseOutCubicInterpolator());
+            nc.enterStart(this);
+            final Controller willAppear = nc;
+            animator.addListener(new Animator.AnimatorListener() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    getView().getHandler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            animating = false;
+                            willAppear.enterEnd();
+                        }
+                    }, 0);
+                }
+
+                @Override
+                public void onAnimationCancel(Animator animation) {
+
+                }
+
+                @Override
+                public void onAnimationRepeat(Animator animation) {
+
+                }
+            });
+            animator.start();
+        }else {
+            if (oc != null) oc.exitStart();
+            nc.enterStart(this);
+            getFragmentManager().beginTransaction().replace(R.id.navigation_content, nc).commit();
+            if (oc != null) oc.exitEnd(this);
+            nc.enterEnd();
+        }
+        pushNavAnim(nc, NavigationBar.AnimationType.FADE);
+    }
+
+    @Override
+    protected void onSubControllerChangeTitle(Controller sender, String title, NavigationBar.AnimationType type) {
+        if (navView != null && sender.equals(controllersStack.lastElement())) {
+            navView.getNavigationBar().setTitle(title, type);
+        }
     }
 
     NavigationItem defaultBackItem;
@@ -330,10 +431,10 @@ public class NavigationController extends Controller {
             navView.getNavigationBar().setRightIcon(icon, animationType);
     }
 
-    public void pushNavAnim(Controller controller, boolean animated) {
+    public void pushNavAnim(Controller controller, NavigationBar.AnimationType type) {
         if (navView != null) {
             final Controller tController = controller;
-            final NavigationBar.AnimationType tAnimation = animated? NavigationBar.AnimationType.PUSH:NavigationBar.AnimationType.NONE;
+            final NavigationBar.AnimationType tAnimation = type;
             getHandler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -345,9 +446,9 @@ public class NavigationController extends Controller {
         }
     }
 
-    public void popNavAnim(Controller controller, boolean animated) {
+    public void popNavAnim(Controller controller, NavigationBar.AnimationType type) {
         if (navView != null) {
-            final NavigationBar.AnimationType tAnimation = animated? NavigationBar.AnimationType.POP: NavigationBar.AnimationType.NONE;
+            final NavigationBar.AnimationType tAnimation = type;
             setLeftNavItem(controller.getLeftItems(), tAnimation);
             setRightNavItem(controller.getRightItems(), tAnimation);
             navView.getNavigationBar().setTitle(controller.getTitle(), tAnimation);

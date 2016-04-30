@@ -10,6 +10,8 @@ import android.view.View;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import apps.gen.lib.views.NavigationBar;
+
 /**
  * Created by Gen on 2016/4/13.
  */
@@ -43,12 +45,17 @@ public class Controller extends Fragment {
     }
 
     public static<T extends Controller> T instantiate(Context context, Class<T> type) {
-        return (T) T.instantiate(context, type.getName());
+        T res = (T) T.instantiate(context, type.getName());
+        res.initialize(context);
+        return res;
     }
     Handler mHandler = new Handler();
     protected Handler getHandler() {
         return mHandler;
     }
+
+    // Override this method to initialize some thing such as tabitems or navitems
+    protected void initialize(Context context) {}
 
     boolean viewDidLoaded = false;
     ArrayList<Runnable> onViewPrepared = new ArrayList<>();
@@ -70,12 +77,16 @@ public class Controller extends Fragment {
     }
     String mTitle;
 
+    protected void onSubControllerChangeTitle(Controller sender, String title, NavigationBar.AnimationType type) {}
     public String getTitle() {
         return mTitle;
     }
     public void setTitle(String title) {
         if (mTitle != title || (mTitle != null && !mTitle.equals(title))) {
             mTitle = title;
+            if (mParent != null) {
+                mParent.onSubControllerChangeTitle(this, mTitle, NavigationBar.AnimationType.FADE);
+            }
         }
     }
 
@@ -122,7 +133,8 @@ public class Controller extends Fragment {
 
     protected enum AnimationType {
         PUSH_POP,
-        LEFT_RIGHT
+        MOVE,
+        FADE
     }
     AnimationType lastType;
     protected AnimationType getLastType(){return lastType;}
@@ -131,8 +143,8 @@ public class Controller extends Fragment {
         pushAnimatorValue = value;
 
         View view = getView();
+        lastType = AnimationType.PUSH_POP;
         if (view != null) {
-            lastType = AnimationType.PUSH_POP;
             updateAnimator(view, value);
         }
     }
@@ -142,20 +154,35 @@ public class Controller extends Fragment {
     void setMoveAnimatorValue(float value) {
         moveAnimatorValue = value;
         View view = getView();
+        lastType = AnimationType.MOVE;
         if (view != null) {
-            lastType = AnimationType.LEFT_RIGHT;
             updateAnimator(view, value);
         }
     }
     float getMoveAnimatorValue() {return moveAnimatorValue;}
 
-    protected void updateAnimator(View view, float value) {
-        float width = view.getWidth();
-        view.setTranslationX(width*value);
-        view.setAlpha(1 - Math.abs(value));
+    float changeAnimatorValue;
+    void setChangeAnimatorValue(float value) {
+        changeAnimatorValue = value;
+        View view = getView();
+        lastType = AnimationType.FADE;
+        if (view != null) {
+            updateAnimator(view, value);
+        }
     }
 
-    protected void enterStart() {
+    protected void updateAnimator(View view, float value) {
+        if (lastType == AnimationType.FADE) {
+            view.setAlpha(1-Math.abs(value));
+        }else {
+            float width = view.getWidth();
+            view.setTranslationX(width*value);
+            view.setAlpha(1 - Math.abs(value));
+        }
+    }
+
+    protected void enterStart(Controller controller) {
+        setParent(controller);
         if (viewDidLoaded) {
             onViewWillAppear();
         }else {
@@ -173,7 +200,9 @@ public class Controller extends Fragment {
     protected void exitStart() {
         onViewWillDisappear();
     }
-    protected void exitEnd() {
+    protected void exitEnd(Controller controller) {
+        if (getParent() == controller)
+            setParent(null);
         onViewDidDisappear();
     }
 
