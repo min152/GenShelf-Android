@@ -4,10 +4,9 @@
     android:layout_height="match_parent"
     tools:context="apps.gen.genshelf.controllers.LibraryController">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <com.nhaarman.listviewanimations.itemmanipulation.DynamicListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:id="@+id/list_view"></com.nhaarman.listviewanimations.itemmanipulation.DynamicListView>
 
 </FrameLayout>

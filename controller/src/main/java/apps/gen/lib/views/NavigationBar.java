@@ -3,6 +3,7 @@ package apps.gen.lib.views;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.support.design.widget.AppBarLayout;
@@ -482,7 +483,7 @@ public class NavigationBar extends RelativeLayout implements View.OnClickListene
         textView.setLayoutParams(layoutParams);
         textView.setMaxLines(1);
         textView.setTextSize(22);
-        textView.setTextColor(getResources().getColor(R.color.colorTitle));
+        textView.setTextColor(Color.WHITE);
         textView.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
         textView.setEllipsize(TextUtils.TruncateAt.END);
         return textView;
