@@ -3,7 +3,6 @@ package apps.gen.lib.views;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.support.design.widget.AppBarLayout;
@@ -129,7 +128,7 @@ public class NavigationBar extends RelativeLayout implements View.OnClickListene
             case FADE:
             {
                 Context context = getContext();
-                final ImageButton newButton = initRightButton(context);
+                final ImageButton newButton = initLeftButton(context);
                 newButton.setImageDrawable(leftIcon);
                 newButton.setOnClickListener(this);
                 addView(newButton);
@@ -170,6 +169,7 @@ public class NavigationBar extends RelativeLayout implements View.OnClickListene
                 });
                 mLeftItemButton = newButton;
             }
+            break;
             default:
                 Context context = getContext();
                 final ImageButton newButton = initLeftButton(context);
@@ -274,6 +274,7 @@ public class NavigationBar extends RelativeLayout implements View.OnClickListene
                 });
                 mRightItemButton = newButton;
             }
+            break;
             default:
                 Context context = getContext();
                 final ImageButton newButton = initRightButton(context);
@@ -379,6 +380,7 @@ public class NavigationBar extends RelativeLayout implements View.OnClickListene
                 });
                 mTitleView = newTitleView;
             }
+            break;
             default: {
                 final TextView newTitleView = initTitle(context);
                 newTitleView.setText(title);
@@ -483,7 +485,7 @@ public class NavigationBar extends RelativeLayout implements View.OnClickListene
         textView.setLayoutParams(layoutParams);
         textView.setMaxLines(1);
         textView.setTextSize(22);
-        textView.setTextColor(Color.WHITE);
+        textView.setTextColor(getResources().getColor(R.color.colorTitle));
         textView.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
         textView.setEllipsize(TextUtils.TruncateAt.END);
         return textView;

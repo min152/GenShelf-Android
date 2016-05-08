@@ -3,6 +3,7 @@ package apps.gen.lib.utils;
 import android.content.Context;
 import android.util.Log;
 
+import apps.gen.lib.Activity;
 import apps.gen.lib.controllers.Controller;
 import apps.gen.lib.controllers.NavigationController;
 import apps.gen.lib.controllers.TabController;
@@ -22,10 +23,16 @@ public final class H {
         final float scale = context.getResources().getDisplayMetrics().density;
         return (int)(dipValue * scale + 0.5f);
     }
+    public static int dip2px(float dip) {
+        return dip2px(Activity.current(), dip);
+    }
 
     public static int px2dip(Context context, float pxValue){
         final float scale = context.getResources().getDisplayMetrics().density;
         return (int)(pxValue / scale + 0.5f);
+    }
+    public static int px2dip(float px) {
+        return px2dip(Activity.current(), px);
     }
 
     public static void i(String msg) {info(msg);}

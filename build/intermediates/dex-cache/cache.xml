@@ -1,3 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<items version="2" />
+<items version="2" >
 
+    <item
+        jar="/Users/gen/Programs/GenShelf-Android2/app/build/intermediates/exploded-aar/GenShelf-Android2/controller/unspecified/jars/classes.jar"
+        jumboMode="false"
+        revision="23.0.2"
+        sha1="bc9ca1c1b8ed3e45c7ad84eed7a7ce96c4022c6b">
+        <dex dex="/Users/gen/Programs/GenShelf-Android2/app/build/intermediates/pre-dexed/debug/GenShelf-Android2-controller-unspecified_7ba58327fc05acc37f256d3ad1c206d0fe65c06a.jar" />
+    </item>
+
+</items>

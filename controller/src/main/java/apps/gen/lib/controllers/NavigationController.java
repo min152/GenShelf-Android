@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,7 +33,7 @@ import apps.gen.lib.views.NavigationBar;
  * Created by Gen on 2016/4/13.
  */
 public class NavigationController extends Controller {
-    static class NavigationControllerView extends android.support.design.widget.CoordinatorLayout {
+    class NavigationControllerView extends android.support.design.widget.CoordinatorLayout {
         NavigationBar mNavigationBar;
         NavigationBar getNavigationBar() {
             return mNavigationBar;
@@ -46,6 +47,7 @@ public class NavigationController extends Controller {
         boolean isInitView = false;
         public NavigationControllerView(Context context, AttributeSet attrs, int defStyleAttr) {
             super(context, attrs, defStyleAttr);
+
             isInitView = true;
             initView(context);
             isInitView = false;
@@ -78,6 +80,9 @@ public class NavigationController extends Controller {
                 mNavigationBar.setBackgroundColor(getResources().getColor(R.color.colorPrimary, null));
             }else {
                 mNavigationBar.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                mNavigationBar.setTranslationZ(10);
             }
             addView(mNavigationBar);
         }
@@ -384,7 +389,7 @@ public class NavigationController extends Controller {
             if (oc != null) oc.exitEnd(this);
             nc.enterEnd();
         }
-        pushNavAnim(nc, NavigationBar.AnimationType.FADE);
+        pushNavAnim(nc, animated ? NavigationBar.AnimationType.FADE : NavigationBar.AnimationType.NONE);
     }
 
     @Override
@@ -455,14 +460,31 @@ public class NavigationController extends Controller {
         }
     }
 
+    public Controller top() {
+        return controllersStack.lastElement();
+    }
+
     public static NavigationController getNavigationController(Controller thiz) {
-        Fragment parent = thiz.getParent();
+        Controller parent = thiz.getParent();
         while (parent != null) {
             if (parent instanceof NavigationController) {
                 return (NavigationController)parent;
             }
-            parent = parent.getParentFragment();
+            parent = parent.getParent();
         }
         return null;
+    }
+
+    @Override
+    public boolean onBackPressed() {
+        if (controllersStack.size() > 0) {
+            Controller top = controllersStack.lastElement();
+            if (!top.onBackPressed()) {
+                pop(true);
+            }
+            return true;
+        }else {
+            return super.onBackPressed();
+        }
     }
 }

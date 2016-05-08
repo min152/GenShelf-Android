@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -74,6 +75,9 @@ public class TabController extends Controller {
             layoutParams.addRule(ALIGN_PARENT_BOTTOM, TRUE);
             mTabBar.setLayoutParams(layoutParams);
             mTabBar.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                mTabBar.setTranslationZ(10);
+            }
             addView(mTabBar);
         }
 
@@ -125,8 +129,22 @@ public class TabController extends Controller {
                     select(index, true);
             }
         });
-        updateItems();
         return tabView;
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        updateItems();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        getFragmentManager().beginTransaction().remove(currentController).commit();
+        currentController.exitStart();
+        currentController.exitEnd(this);
+        currentController = null;
     }
 
     ArrayList<TabItem> mItems = new ArrayList<>();
@@ -199,7 +217,8 @@ public class TabController extends Controller {
                 item.getController().setParent(this);
             }
             tabView.getTabBar().setItems(items);
-            mIndex = 0;
+            if (mIndex >= mItems.size())
+                mIndex = 0;
             setCurrentController(mItems.get(mIndex).getController(), AnimationType.NONE);
             if (super.getTitle() == null) {
                 setSubtitle(items[mIndex].getTitle(), NavigationBar.AnimationType.NONE);
@@ -236,7 +255,6 @@ public class TabController extends Controller {
                         public void onAnimationEnd(Animator animation) {
                             willDisappear.exitEnd(TabController.this);
                             getFragmentManager().beginTransaction().remove(willDisappear).commit();
-                            animating = false;
                         }
 
                         @Override
@@ -266,6 +284,7 @@ public class TabController extends Controller {
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         willAppear.enterEnd();
+                        animating = false;
                     }
 
                     @Override
@@ -293,5 +312,13 @@ public class TabController extends Controller {
             parent = parent.getParentFragment();
         }
         return null;
+    }
+
+    @Override
+    public boolean onBackPressed() {
+        if (currentController != null) {
+            return currentController.onBackPressed();
+        }
+        return super.onBackPressed();
     }
 }
