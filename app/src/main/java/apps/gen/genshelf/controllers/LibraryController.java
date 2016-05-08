@@ -63,7 +63,7 @@ public class LibraryController extends Controller {
                 if (cell == null) {
                     cell = new BookCell(getContext());
                 }
-                cell.getTextView().setText("Hel");
+                cell.getLabelView().setText("Hel");
                 if (position == 1) {
                     cell.getImageView().setImageDrawable(getResources().getDrawable(R.drawable.ic_menu_camera));
                 } else {

@@ -1,6 +1,8 @@
 package apps.gen.lib.views;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.media.Image;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
@@ -10,86 +12,99 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
-
 import apps.gen.lib.utils.H;
 
 /**
  * Created by gen on 16/4/30.
  */
 public class ListCell extends RelativeLayout {
+    int d(int s) {return H.dip2px(getContext(), s);}
+
     RelativeLayout mContentView;
 
-    public ListCell(Context context) {
-        this(context, null);
-    }
-
-    public ListCell(Context context, AttributeSet attrs) {
-        this(context, attrs, 0);
-    }
+    final int DEFAULT_HEIGHT = 44, CELL_PADDING = 6;
 
     ImageView mImageView;
-    TextView mTextView;
-
-    final int DEFAULT_PADDING = 6;
-    public ListCell(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-        mContentView = new RelativeLayout(context);
-        LayoutParams layoutParams = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        mContentView.setLayoutParams(layoutParams);
-        int padding = H.dip2px(context, DEFAULT_PADDING);
-        mContentView.setPadding(padding,padding,padding,padding);
-        super.addView(mContentView);
-
-        initialize(context);
-    }
-
     public ImageView getImageView() {
         if (mImageView == null) {
-            mImageView = new ImageView(getContext());
-            LayoutParams layoutParams = new LayoutParams(mContentView.getHeight() - H.dip2px(getContext(), DEFAULT_PADDING) * 2, ViewGroup.LayoutParams.MATCH_PARENT);
+            Context context = getContext();
+            mImageView = new ImageView(context);
+            mImageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+            LayoutParams layoutParams = new LayoutParams(d(DEFAULT_HEIGHT - CELL_PADDING * 2), ViewGroup.LayoutParams.MATCH_PARENT);
             mImageView.setLayoutParams(layoutParams);
-            mImageView.setScaleType(ImageView.ScaleType.CENTER);
-            mContentView.addView(mImageView);
+            getContentView().addView(mImageView);
         }
         return mImageView;
     }
 
-    public TextView getTextView() {
-        if (mTextView == null) {
-            mTextView = new TextView(getContext());
+    TextView mLabelView;
+    public TextView getLabelView() {
+        if (mLabelView == null) {
+            Context context = getContext();
+            mLabelView = new TextView(context);
+            mLabelView.setTextColor(Color.BLACK);
             LayoutParams layoutParams = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-            layoutParams.setMargins(textLeft(), 0, 0, 0);
-            mTextView.setLayoutParams(layoutParams);
-            mTextView.setGravity(Gravity.CENTER_VERTICAL);
-            mContentView.addView(mTextView);
+            layoutParams.setMargins(d(DEFAULT_HEIGHT - CELL_PADDING), 0, 0, 0);
+            mLabelView.setGravity(Gravity.CENTER_VERTICAL);
+            mLabelView.setLayoutParams(layoutParams);
+            getContentView().addView(mLabelView);
         }
-        return mTextView;
+        return mLabelView;
     }
 
-    @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
-        updateSize(w, h);
+    public ListCell(Context context) {
+        super(context);
+        mContentView = new RelativeLayout(context);
+        LayoutParams layoutParams = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, d(DEFAULT_HEIGHT));
+        mContentView.setLayoutParams(layoutParams);
+        super.addView(mContentView);
+
+        initialize(context);
+    }
+    public ListCell(Context context, String identifier) {
+        super(context);
+        mContentView = new RelativeLayout(context);
+        LayoutParams layoutParams = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, d(DEFAULT_HEIGHT));
+        mContentView.setLayoutParams(layoutParams);
+        int p = d(CELL_PADDING);
+        mContentView.setPadding(p, p, p, p);
+        super.addView(mContentView);
+
+        mIdentifier = identifier;
+        initialize(context);
     }
 
     protected void initialize(Context context) {}
-
-    int textLeft() {
-        return mImageView == null || mImageView.getDrawable() == null ? 0 : getHeight() - H.dip2px(getContext(), DEFAULT_PADDING);
-    }
 
     public RelativeLayout getContentView() {
         return mContentView;
     }
 
-    public void updateSize(int w, int h) {
+    String mIdentifier = "cellIdentifier";
+
+    public String getIdentifier() {
+        return mIdentifier;
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        updateSize();
+    }
+
+    public void updateSize() {
+        int h = getHeight();
         if (mImageView != null) {
-            mImageView.getLayoutParams().width = h - H.dip2px(getContext(), DEFAULT_PADDING) * 2;
+            mImageView.getLayoutParams().width = h - (CELL_PADDING)* 2;
         }
-        if (mTextView != null) {
-            LayoutParams layoutParams = (LayoutParams)mTextView.getLayoutParams();
-            layoutParams.setMargins(textLeft(), 0, 0, 0);
+        if (mLabelView != null) {
+            LayoutParams layoutParams = (LayoutParams)mLabelView.getLayoutParams();
+            if (mImageView != null && mImageView.getDrawable() != null) {
+                layoutParams.setMargins(h - mContentView.getPaddingLeft(), 0, 0, 0);
+            }else {
+                layoutParams.setMargins(0, 0, 0, 0);
+            }
+            mLabelView.setLayoutParams(layoutParams);
         }
     }
 }

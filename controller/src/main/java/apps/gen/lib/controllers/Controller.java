@@ -218,4 +218,8 @@ public class Controller extends Fragment {
     public Controller getParent() {
         return mParent;
     }
+
+    public boolean onBackPressed() {
+        return false;
+    }
 }

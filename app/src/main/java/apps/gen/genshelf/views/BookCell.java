@@ -12,16 +12,13 @@ import apps.gen.lib.views.ListCell;
  * Created by Gen on 2016/5/2.
  */
 public class BookCell extends ListCell {
+
     public BookCell(Context context) {
         super(context);
     }
 
-    public BookCell(Context context, AttributeSet attrs) {
-        super(context, attrs);
-    }
-
-    public BookCell(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
+    public BookCell(Context context, String identifier) {
+        super(context, identifier);
     }
 
     @Override

@@ -2,6 +2,7 @@ package apps.gen.lib.views;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.AttributeSet;
@@ -168,36 +169,55 @@ public class TabBar extends RelativeLayout implements View.OnClickListener {
     void updateItems() {
         int width = getWidth(), height = getHeight();
         if (width == 0 || height == 0) return;
-        for (TabButton button : mButtons) {
-            removeView(button);
-        }
         Context context = getContext();
-        mButtons.clear();
-        int count = 0;
-        for (TabItem item : mItems) {
-            final TabButton button = new TabButton(context);
+        int i = 0;
+        int ic = mItems.size();
+        while (i < ic) {
+            TabItem item = mItems.get(i);
+            TabButton button = null;
+            if (i >= mButtons.size()) {
+                button = new TabButton(context);
+                LayoutParams layoutParams = new LayoutParams(height, height);
+                button.setLayoutParams(layoutParams);
+                button.setOnClickListener(this);
+                addView(button);
+                mButtons.add(button);
+            }else {
+                button = mButtons.get(i);
+            }
             button.setItem(item);
-            LayoutParams layoutParams = new LayoutParams(height, height);
-            button.setLayoutParams(layoutParams);
-            progressView(button, count, width, height, new H.BaseInterface2<Integer, Integer>() {
-                @Override
-                public void run(Integer p, Integer o) {
-                    button.setY(p);
-                    button.setX(o);
-                }
-            });
-            button.setOnClickListener(this);
-            addView(button);
-            mButtons.add(button);
-            count ++;
+            button.getLabelView().setTextColor(mLabelColor);
+            progressView(button, i, width, height);
+            i ++;
+        }
+        while (i < mButtons.size()) {
+            TabButton button = mButtons.get(i);
+            removeView(button);
+            mButtons.remove(i);
         }
     }
-    void progressView(TabButton button, int index, int width, int height, H.BaseInterface2<Integer,Integer> in) {
+
+
+    int mLabelColor = Color.WHITE;
+    public void setLabelColor(int color) {
+        if (mLabelColor != color) {
+            mLabelColor = color;
+            for (TabButton button : mButtons) {
+                button.getLabelView().setTextColor(color);
+            }
+        }
+    }
+    public int getLabelColor() {
+        return mLabelColor;
+    }
+
+    void progressView(TabButton button, int index, int width, int height) {
         int size = mItems.size();
         int itemSpan = (width - height * size)/(size + 1);
         int top = 0;
         int left = itemSpan * (index + 1) + height * index;
-        in.run(top, left);
+        button.setX(left);
+        button.setY(top);
     }
 
     @Override
