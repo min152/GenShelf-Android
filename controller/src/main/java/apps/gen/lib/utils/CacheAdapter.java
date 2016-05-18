@@ -29,7 +29,6 @@ public abstract class CacheAdapter extends BaseAdapter {
         if (_template != null && !res.equals(_template)) {
             pushCache(_template);
         }
-        res.updateSize();
         return res;
     }
 

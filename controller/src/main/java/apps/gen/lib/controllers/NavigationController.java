@@ -460,10 +460,6 @@ public class NavigationController extends Controller {
         }
     }
 
-    public Controller top() {
-        return controllersStack.lastElement();
-    }
-
     public static NavigationController getNavigationController(Controller thiz) {
         Controller parent = thiz.getParent();
         while (parent != null) {

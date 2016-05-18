@@ -128,7 +128,7 @@ public class NavigationBar extends RelativeLayout implements View.OnClickListene
             case FADE:
             {
                 Context context = getContext();
-                final ImageButton newButton = initLeftButton(context);
+                final ImageButton newButton = initRightButton(context);
                 newButton.setImageDrawable(leftIcon);
                 newButton.setOnClickListener(this);
                 addView(newButton);

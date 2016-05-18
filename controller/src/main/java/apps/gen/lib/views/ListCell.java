@@ -89,21 +89,12 @@ public class ListCell extends RelativeLayout {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        updateSize();
-    }
-
-    public void updateSize() {
-        int h = getHeight();
         if (mImageView != null) {
             mImageView.getLayoutParams().width = h - (CELL_PADDING)* 2;
         }
         if (mLabelView != null) {
             LayoutParams layoutParams = (LayoutParams)mLabelView.getLayoutParams();
-            if (mImageView != null && mImageView.getDrawable() != null) {
-                layoutParams.setMargins(h - mContentView.getPaddingLeft(), 0, 0, 0);
-            }else {
-                layoutParams.setMargins(0, 0, 0, 0);
-            }
+            layoutParams.setMargins(h - mContentView.getPaddingLeft(), 0, 0, 0);
             mLabelView.setLayoutParams(layoutParams);
         }
     }
